@@ -1,0 +1,9 @@
+*.ckpt
+data
+__pycache__
+.DS_Store
+.*.swp
+*.egg-info
+.idea
+*.log
+lightning_logs
