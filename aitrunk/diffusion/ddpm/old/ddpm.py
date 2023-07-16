@@ -8,8 +8,8 @@ import math
 import pytorch_lightning as pl
 from torch.utils.data import DataLoader
 
-from aitrunk.data import TVDataset
-from aitrunk.ddpm.old.common import *
+from aitrunk.diffusion.ddpm.old.data import TVDataset
+from aitrunk.diffusion.ddpm.old.common import *
 
 
 class DiffusionModel(pl.LightningModule):
