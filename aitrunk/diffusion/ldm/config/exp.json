@@ -1,0 +1,31 @@
+{
+  "testexp": {
+    "title": "testexp",
+    "description": "testexp",
+    "paper": "testexp",
+    "outdir": "../output/testexp",
+    "taskflow": {
+      "train": {
+        "type": "train",
+        "dataset": "che111/laion256",
+        "model": {
+          "uncond_scale": 7.5,
+          "latent_scaling_factor": 0.18215,
+          "n_steps": 1000,
+          "beta_start": 0.0008,
+          "beta_end": 0.012,
+          "autoencoder": "kl-f8",
+          "cond_encoder": "openai/clip-vit-large-patch14",
+          "eps_model": {
+            "channels": 320,
+            "attention_levels": [0, 1, 2],
+            "n_res_blocks": 2,
+            "channel_multipliers": [1, 2, 4, 4],
+            "n_heads": 8,
+            "tf_layers": 1
+          }
+        }
+      }
+    }
+  }
+}

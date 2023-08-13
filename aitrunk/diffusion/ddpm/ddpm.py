@@ -1,6 +1,6 @@
 """
 Pytorch Lightning implementation of Denoising Diffusion Probabilistic Models (DDPM)
-Paper: https://arxiv.org/abs/2006.11239
+Paper: Ho, J., et al, Denoising Diffusion Probabilistic Models, arXiv 2020, https://arxiv.org/abs/2006.11239
 This implementation is based on labml.ai's implementations:
 https://github.com/labmlai/annotated_deep_learning_paper_implementations/tree/master/labml_nn/diffusion/ddpm
 """
@@ -16,10 +16,10 @@ from torchvision import transforms, datasets
 from torch.utils.data import DataLoader
 from torchvision.utils import make_grid
 
-from aitrunk.diffusion.ddpm.utils import gather
+from aitrunk.utils import gather
 from aitrunk.diffusion.ddpm.unet import UNet
 
-class DDPLitModel(pl.LightningModule):
+class DDPM(pl.LightningModule):
     def __init__(self, eps_model: nn.Module, n_steps: int):
         """
         :param eps_model: ${\epsilon_\theta}(x_t, t)$ model that predicts noised samples at time $t$
@@ -124,6 +124,9 @@ class DDPLitModel(pl.LightningModule):
         # $$\frac{1}{\sqrt{\alpha_t}} \Big(x_t -
         #      \frac{\beta_t}{\sqrt{1-\bar\alpha_t}}\textcolor{lightgreen}{\epsilon_\theta}(x_t, t) \Big)$$
         mean = 1 / (alpha ** 0.5) * (xt - eps_coef * eps_theta)
+        if t[0] == 0:
+            return mean
+
         # $\sigma^2$
         var = gather(self.sigma2, t)
 
@@ -136,7 +139,7 @@ class DDPLitModel(pl.LightningModule):
 DATADIR = '/data'
 
 
-class DDLitModelTest(unittest.TestCase):
+class DDPMTest(unittest.TestCase):
     def setUp(self):
         self.img_size = 32
         self.n_channels = 1
@@ -157,7 +160,7 @@ class DDLitModelTest(unittest.TestCase):
 
     def create_model(self):
         eps_model = UNet(image_channels=self.n_channels)
-        return DDPLitModel(eps_model, self.n_steps)
+        return DDPM(eps_model, self.n_steps)
 
     def create_trainer(self, max_epochs=10):
         return pl.Trainer(accelerator='auto',
