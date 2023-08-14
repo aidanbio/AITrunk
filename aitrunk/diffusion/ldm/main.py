@@ -187,6 +187,7 @@ def run_train(args):
             "contiguous_gradients": True,
         },
     }
+
     dirpath, filename = os.path.split(args.filepath)
     callbacks = [ModelCheckpoint(dirpath=dirpath,
                                  filename=os.path.splitext(filename)[0],
