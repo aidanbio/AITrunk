@@ -16,6 +16,7 @@ from torch.utils.data import DataLoader
 from torchvision import transforms, datasets
 import matplotlib.pyplot as plt
 from torchvision.utils import make_grid
+import numpy as np
 
 class VAELitModel(pl.LightningModule):
     class Encoder(nn.Module):
@@ -118,13 +119,24 @@ class VAELitModel(pl.LightningModule):
         x_reconst, mu, logvar = self(x)
         # Compute the reconstruction loss and the regularization term, KL divergence, which is q(x|z) || p(z)
         reconst_loss = F.binary_cross_entropy(x_reconst, x, reduction='sum')
-        kl_div = 0.5 * torch.sum(mu.pow(2) + logvar.exp() - logvar - 1)
-        loss = reconst_loss + kl_div
+        kl_loss = 0.5 * torch.sum(mu.pow(2) + logvar.exp() - logvar - 1)
+        # kl_weight = float(min(1, self.trainer.global_step / 2500))
+        # kl_weight = float(1 / (1 + np.exp(-0.0025 * (self.trainer.global_step - 2500))))
+        kl_weight = self._get_kl_weight(step=self.trainer.global_step)
+        loss = reconst_loss + kl_loss * kl_weight
         self.log_dict(OrderedDict({f'{log_prefix}.loss': loss,
                                    f'{log_prefix}.reconst_loss': reconst_loss,
-                                   f'{log_prefix}.kl_div': kl_div}),
+                                   f'{log_prefix}.kl_loss': kl_loss}),
                       prog_bar=True)
         return loss
+
+    def _get_kl_weight(self, schedule='logistic', step=0, k=0.0025, x0=2500):
+        if schedule == 'logistic':
+            return float(1 / (1 + np.exp(-k * (step - x0))))
+        elif schedule == 'linear':
+            return float(min(1, step / x0))
+        else:
+            raise ValueError('Unknown schedule function')
 
 class VAELitModelTest(unittest.TestCase):
     def setUp(self) -> None:
@@ -142,7 +154,7 @@ class VAELitModelTest(unittest.TestCase):
         self.test_dataloader = DataLoader(test, batch_size=batch_size, shuffle=False)
         img_size = 28
         n_channels = 1
-        self.model = VAELitModel(x_dim=img_size*img_size*n_channels, h_dim=400, z_dim=10)
+        self.model = VAELitModel(x_dim=img_size*img_size*n_channels, h_dim=400, z_dim=50)
 
     def state_dict_equal(self, st1, st2):
         if st1.keys() != st2.keys():

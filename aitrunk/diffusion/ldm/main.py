@@ -18,7 +18,7 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.strategies import DeepSpeedStrategy
 from aitrunk.diffusion.ldm.autoencoder import load_compvis_autoencoder
 from aitrunk.diffusion.ldm.clip import CLIPTextEncoder
-from aitrunk.diffusion.ldm.ldm import LDM
+from aitrunk.diffusion.ldm.ldm import DiffusionLitModel
 from aitrunk.diffusion.ldm.unet_attention import CrossAttention
 import torch.multiprocessing as mp
 from pytorch_lightning.utilities.deepspeed import convert_zero_checkpoint_to_fp32_state_dict
@@ -163,7 +163,7 @@ def run_train(args):
                                                                            latent_scaling_factor=args.latent_scaling_factor))
     train_dataloader = DataLoader(train_ds, batch_size=args.batch_size)
 
-    model = LDM(config=config)
+    model = DiffusionLitModel(config=config)
     ds_config = {
         "zero_allow_untested_optimizer": True,
         "zero_optimization": {
@@ -241,7 +241,7 @@ def get_model_config(args):
 def gen_samples(args):
     print(f'Start gen_samples with args: {args}')
     config = get_model_config(args)
-    model = LDM.load_from_checkpoint(args.ckpt, config=config)
+    model = DiffusionLitModel.load_from_checkpoint(args.ckpt, config=config)
     device = torch.device('cuda')
     model = model.to(device)
     model.eval()

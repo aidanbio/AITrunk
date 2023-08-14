@@ -21,7 +21,7 @@ from deepspeed.ops.adam import DeepSpeedCPUAdam
 import deepspeed
 from fairscale.nn import checkpoint_wrapper, auto_wrap
 
-class LDM(pl.LightningModule):
+class DiffusionLitModel(pl.LightningModule):
     def __init__(self, config=None):
         super().__init__()
 
