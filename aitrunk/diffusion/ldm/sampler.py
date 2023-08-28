@@ -120,7 +120,7 @@ class DDPMSampler(DiffusionSampler):
 class DDIMSampler(DiffusionSampler):
     def __init__(self, model=None, n_steps=20, discretize='uniform', eta=0.):
         """
-        :param model:is the latent diffusion model
+        :param model:is the diffusion model
         :param n_steps: is the DDIM sampling steps $S$
         :param discretize: is how to extract $tau$ the time steps. 'uniform' or 'quad'
         :param eta: is used to calculate $sigma_t. $eta=0$ is the original DDPM

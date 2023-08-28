@@ -18,7 +18,7 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.strategies import DeepSpeedStrategy
 from aitrunk.diffusion.ldm.autoencoder import load_compvis_autoencoder
 from aitrunk.diffusion.ldm.clip import CLIPTextEncoder
-from aitrunk.diffusion.ldm.ldm import DiffusionLitModel
+from aitrunk.diffusion.ldm.model import DiffusionLitModel
 from aitrunk.diffusion.ldm.unet_attention import CrossAttention
 import torch.multiprocessing as mp
 from pytorch_lightning.utilities.deepspeed import convert_zero_checkpoint_to_fp32_state_dict
@@ -187,7 +187,7 @@ def run_train(args):
             "contiguous_gradients": True,
         },
     }
-
+    from transformers import Rober
     dirpath, filename = os.path.split(args.filepath)
     callbacks = [ModelCheckpoint(dirpath=dirpath,
                                  filename=os.path.splitext(filename)[0],
@@ -204,6 +204,8 @@ def run_train(args):
                          max_epochs=args.max_epochs,
                          callbacks=callbacks,
                          enable_checkpointing=True)
+    #  FlashAttention backward for head dim > 64 requires A100 or H100 GPUs
+    #  as the implementation needs a large amount of shared memory.
     CrossAttention.use_flash_attention = False
     torch.set_autocast_enabled(True)
     trainer.fit(model, train_dataloader)

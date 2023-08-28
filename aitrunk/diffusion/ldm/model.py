@@ -25,7 +25,8 @@ class DiffusionLitModel(pl.LightningModule):
     def __init__(self, config=None):
         super().__init__()
 
-        self.eps_model = auto_wrap(UNetModel(**config['eps_model']))
+        self.config = config
+        # self.eps_model = auto_wrap(UNetModel(**config['eps_model']))
 
         self.n_steps = config.get('n_steps', 1000)
         beta_start = config.get('beta_start', 0.00085)
@@ -50,6 +51,10 @@ class DiffusionLitModel(pl.LightningModule):
         optimizer = DeepSpeedCPUAdam(self.parameters(), lr=2e-4)
         # optimizer = FusedLamb(self.parameters(), lr=2e-4)
         return optimizer
+
+    def configure_sharded_model(self):
+        self.eps_model = auto_wrap(UNetModel(**self.config['eps_model']))
+        # self.eps_model = UNetModel(**self.config['eps_model'])
 
     # def on_train_batch_end(self, outputs: STEP_OUTPUT, batch: Any, batch_idx: int) -> None:
     #     print(f'>>>Batch {batch_idx} end. Call get_accelerator().empty_cache()')
