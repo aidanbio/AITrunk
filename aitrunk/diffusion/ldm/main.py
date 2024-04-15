@@ -70,7 +70,7 @@ class TextImageLatentDataDumper(object):
         for i, row in enumerate(ds):
             img = self.transform(row['image'])
             z_img = self.autoencoder.encode(img.unsqueeze(0)).sample().squeeze(0)
-            z_txt = self.text_encoder([row['text']]).squeeze(0)
+            z_txt = self.text_encoder([row['prompt']]).squeeze(0)
             if fp16:
                 z_img = z_img.to(torch.float16)
                 z_txt = z_txt.to(torch.float16)
@@ -151,6 +151,7 @@ class ZPairDataGenerator:
                 # print(f'Current yield: z_pair[0].shape: {z_pair[0].shape}, z_pair[1].shape: {z_pair[1].shape}')
                 yield {'input': z_pair[0] * self.latent_scaling_factor, 'cond': z_pair[1]}
 
+
 def run_train(args):
     print(f'Start train with args: {args}')
     config = get_model_config(args)
@@ -187,7 +188,7 @@ def run_train(args):
             "contiguous_gradients": True,
         },
     }
-    from transformers import Rober
+
     dirpath, filename = os.path.split(args.filepath)
     callbacks = [ModelCheckpoint(dirpath=dirpath,
                                  filename=os.path.splitext(filename)[0],
@@ -283,7 +284,7 @@ if __name__ == '__main__':
     # Arguments for sub command 'dump_latent_data'
     sub_parser = subparsers.add_parser('dump_latent_data')
     sub_parser.set_defaults(func=dump_latent_data)
-    sub_parser.add_argument('--source', type=str, default='che111/laion256')
+    sub_parser.add_argument('--source', type=str, default='wtcherr/LAION10K')
     sub_parser.add_argument('--autoencoder', type=str, default='kl-f8')
     sub_parser.add_argument('--clip', type=str, default='openai/clip-vit-large-patch14')
     sub_parser.add_argument('--img_size', type=tuple, default=(3, 256, 256))
